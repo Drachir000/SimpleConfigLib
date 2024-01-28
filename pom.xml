@@ -10,7 +10,7 @@
 	</properties>
 	
 	<groupId>de.drachir000.utils</groupId>
-	<artifactId>SimpleConfigLib</artifactId>
+	<artifactId>simple-config-lib</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	
 	<name>SimpleConfigLib</name>
@@ -35,6 +35,14 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Drachir000 Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/Drachir000/SimpleConfigLib</url>
+		</repository>
+	</distributionManagement>
 	
 	<repositories>
 	
@@ -140,7 +148,7 @@
 						<configuration>
 							<target>
 								<copy file="target/${project.artifactId}-${project.version}.jar"
-								      tofile="target/${project.artifactId}.jar"/>
+								      tofile="target/${project.name}.jar"/>
 							</target>
 						</configuration>
 						<goals>
