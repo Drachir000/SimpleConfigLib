@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 
@@ -469,6 +471,57 @@ public class Configuration {
 	
 	protected JSONObject toJsonObject() {
 		return content;
+	}
+	
+	/**
+	 * Deserializes a serialized object.
+	 *
+	 * @param s the serialized object as a Base64 encoded string
+	 * @return the deserialized object
+	 * @throws IOException              if an I/O error occurs while deserializing
+	 * @throws ClassNotFoundException   if the class of the object to be deserialized is not found
+	 * @throws IllegalArgumentException if the string is null or empty
+	 * @throws SecurityException        if a security manager exists and its checkPermission method denies permission to deserialize
+	 * @throws NullPointerException     if the string is null or empty
+	 */
+	protected static Object deserialize(String s) throws IOException, ClassNotFoundException, IllegalArgumentException, SecurityException, NullPointerException {
+		
+		if (s == null || s.isBlank())
+			throw new NullPointerException("Cannot deserialize null or empty String!");
+		
+		byte[] data = Base64.getDecoder().decode(s);
+		
+		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+		
+		Object o = ois.readObject();
+		ois.close();
+		
+		return o;
+		
+	}
+	
+	/**
+	 * Serializes an object into a Base64 encoded string.
+	 *
+	 * @param o The object to be serialized. Must implement the Serializable interface.
+	 * @return A Base64 encoded string representation of the serialized object.
+	 * @throws IOException          If an I/O error occurs while serializing the object.
+	 * @throws SecurityException    If a security violation occurs during serialization.
+	 * @throws NullPointerException If the object passed is null.
+	 */
+	protected static String serialize(Serializable o) throws IOException, SecurityException, NullPointerException {
+		
+		if (o == null)
+			throw new NullPointerException("null cannot be serialized!");
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		
+		oos.writeObject(o);
+		oos.close();
+		
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+		
 	}
 	
 }
