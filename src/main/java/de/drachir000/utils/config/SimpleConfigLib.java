@@ -12,6 +12,7 @@ public class SimpleConfigLib {
 	 * Creates an empty configuration.
 	 *
 	 * @return an empty {@link Configuration} object
+	 * @since 1.1
 	 */
 	public static Configuration emptyConfiguration() {
 		return new Configuration(new JSONObject());
@@ -23,8 +24,9 @@ public class SimpleConfigLib {
 	 *
 	 * @param jsonObject the {@link JSONObject} representing the {@link Configuration}
 	 * @return a {@link Configuration} object created from the {@link JSONObject}
+	 * @since 1.1
 	 */
-	public static Configuration configurationFromJSONObject(JSONObject jsonObject) {
+	public static Configuration buildConfiguration(JSONObject jsonObject) {
 		return new Configuration(jsonObject);
 	}
 	
@@ -34,8 +36,9 @@ public class SimpleConfigLib {
 	 * @param source the JSON string representing the configuration
 	 * @return a {@link Configuration} object created from the JSON string
 	 * @throws JSONException If there is a syntax error in the source string or a duplicated key.
+	 * @since 1.1
 	 */
-	public static Configuration configurationFromString(String source) throws JSONException {
+	public static Configuration buildConfiguration(String source) throws JSONException {
 		return new Configuration(new JSONObject(source));
 	}
 	

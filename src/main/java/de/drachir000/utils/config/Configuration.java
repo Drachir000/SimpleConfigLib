@@ -18,7 +18,7 @@ public class Configuration {
 	 * Create a {@link Configuration} based on a {@link JSONObject}
 	 *
 	 * @param jsonObject The base {@link JSONObject}
-	 * @deprecated This is planned to be replaced by {@link SimpleConfigLib#configurationFromJSONObject(JSONObject)}!
+	 * @deprecated This is planned to be replaced by {@link SimpleConfigLib#buildConfiguration(JSONObject)}!
 	 * @see SimpleConfigLib
 	 */
 	@Deprecated
