@@ -569,6 +569,7 @@ public class Configuration {
 	 * brace)</small>.
 	 * @throws IOException       if an I/O error occurs
 	 * @throws SecurityException if a security violation occurs
+	 * @since 1.2.1
 	 */
 	public String toString(boolean encodeUnknownObjects) throws IOException, SecurityException {
 		
