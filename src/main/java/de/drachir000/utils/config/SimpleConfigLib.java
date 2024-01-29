@@ -3,6 +3,8 @@ package de.drachir000.utils.config;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
+
 /**
  * SimpleConfigLib is a class that provides static utility methods for working with configurations.
  */
@@ -40,6 +42,49 @@ public class SimpleConfigLib {
 	 */
 	public static Configuration buildConfiguration(String source) throws JSONException {
 		return new Configuration(new JSONObject(source));
+	}
+	
+	/**
+	 * Saves a {@link Configuration} to a {@link File}.
+	 *
+	 * @param configuration the {@link Configuration} to be saved
+	 * @param file          the {@link File} to save the {@link Configuration} to
+	 * @throws IOException if an I/O error occurs while writing to the file
+	 * @since 1.3
+	 */
+	public static void save(Configuration configuration, File file) throws IOException {
+		
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		writer.write(configuration.toString());
+		
+		writer.flush();
+		writer.close();
+		
+	}
+	
+	/**
+	 * Reads a JSON string from a {@link File} and constructs a {@link Configuration} object from it.
+	 *
+	 * @param file the {@link File} to read the JSON string from
+	 * @return a {@link Configuration} object constructed from the JSON string
+	 * @throws IOException   if an I/O error occurs while reading the file
+	 * @throws JSONException if there is a syntax error in the JSON string or a duplicated key
+	 * @since 1.3
+	 */
+	public static Configuration load(File file) throws IOException, JSONException {
+		
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		StringBuilder builder = new StringBuilder();
+		
+		String line;
+		while ((line = reader.readLine()) != null) {
+			builder.append(line);
+		}
+		
+		reader.close();
+		
+		return buildConfiguration(builder.toString());
+		
 	}
 	
 }
