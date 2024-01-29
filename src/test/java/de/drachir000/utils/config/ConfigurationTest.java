@@ -943,7 +943,7 @@ public class ConfigurationTest {
 		
 	}
 	
-	private enum TestEnum {
+	enum TestEnum {
 		
 		VALUE_ONE,
 		VALUE_TWO,
@@ -951,6 +951,7 @@ public class ConfigurationTest {
 		
 	}
 	
-	private record TestObject(int i, String s, TestEnum e, float f) implements Serializable {}
+	protected record TestObject(int i, String s, TestEnum e, float f) implements Serializable {
+	}
 	
 }
