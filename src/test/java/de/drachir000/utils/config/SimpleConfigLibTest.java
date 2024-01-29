@@ -53,7 +53,7 @@ public class SimpleConfigLibTest {
 	}
 	
 	@Test
-	public void testSaveFile() throws IOException {
+	public void testSaveFile1() throws IOException {
 		
 		Configuration configuration = SimpleConfigLib.emptyConfiguration();
 		File file = new File("settings.json");
@@ -69,6 +69,42 @@ public class SimpleConfigLibTest {
 		
 		Configuration loadedConfig = SimpleConfigLib.load(file);
 		assertEquals("value", loadedConfig.getString("key"));
+		
+	}
+	
+	@Test
+	public void testSaveFile2() throws IOException, ClassNotFoundException {
+		
+		Configuration configuration = SimpleConfigLib.emptyConfiguration();
+		File file = new File("settings.json");
+		ConfigurationTest.TestObject value = new ConfigurationTest.TestObject(123, "Hello World!", ConfigurationTest.TestEnum.VALUE_THREE, 456.78f);
+		
+		if (file.exists())
+			assertTrue(file.delete());
+		
+		configuration.set("key", value);
+		
+		assertEquals(value, configuration.get("key"));
+		assertFalse(configuration.isEncodedObject("key"));
+		
+		SimpleConfigLib.save(configuration, file, true);
+		
+		assertTrue(file.exists());
+		
+		Configuration loadedConfig1 = SimpleConfigLib.load(file);
+		assertTrue(loadedConfig1.isEncodedObject("key"));
+		assertEquals(value, loadedConfig1.getEncoded("key"));
+		
+		if (file.exists())
+			assertTrue(file.delete());
+		
+		SimpleConfigLib.save(configuration, file);
+		
+		assertTrue(file.exists());
+		
+		Configuration loadedConfig2 = SimpleConfigLib.load(file);
+		assertFalse(loadedConfig2.isEncodedObject("key"));
+		assertThrows(IllegalArgumentException.class, () -> loadedConfig2.getEncoded("key"));
 		
 	}
 	
