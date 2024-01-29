@@ -63,6 +63,33 @@ public class SimpleConfigLib {
 	}
 	
 	/**
+	 * Saves a {@link Configuration} to a {@link File}.
+	 *
+	 * @param configuration        the {@link Configuration} to be saved
+	 * @param file                 the {@link File} to save the {@link Configuration} to
+	 * @param encodeUnknownObjects represents whether to encode unknown objects. If this is set to true, any {@link Serializable}
+	 *                             object, which is not recognized and hence would be converted into a String for the result, will be
+	 *                             serialized and Base64 encoded. Such objects can then be fetched using {@link Configuration#getEncoded(String)}.
+	 *                             This setting does not modify this Object, only the manner these objects are stored within the File by this method.
+	 * @throws IOException if an I/O error occurs while writing to the file
+	 * @since 1.3
+	 */
+	public static void save(Configuration configuration, File file, boolean encodeUnknownObjects) throws IOException {
+		
+		if (!encodeUnknownObjects) {
+			save(configuration, file);
+			return;
+		}
+		
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		writer.write(configuration.toString(true));
+		
+		writer.flush();
+		writer.close();
+		
+	}
+	
+	/**
 	 * Reads a JSON string from a {@link File} and constructs a {@link Configuration} object from it.
 	 *
 	 * @param file the {@link File} to read the JSON string from
