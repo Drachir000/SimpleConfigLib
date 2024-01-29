@@ -20,8 +20,8 @@ public class Configuration {
 	 * Create a {@link Configuration} based on a {@link JSONObject}
 	 *
 	 * @param jsonObject The base {@link JSONObject}
-	 * @deprecated This is planned to be replaced by {@link SimpleConfigLib#buildConfiguration(JSONObject)}!
 	 * @see SimpleConfigLib
+	 * @deprecated This is planned to be replaced by {@link SimpleConfigLib#buildConfiguration(JSONObject)}!
 	 */
 	@Deprecated
 	public Configuration(JSONObject jsonObject) {
@@ -146,7 +146,7 @@ public class Configuration {
 	 */
 	public Configuration getConfiguration(String key) throws JSONException {
 		
-		Object object = content.get(key);
+		Object object = get(key);
 		
 		if (object instanceof JSONObject) {
 			return new Configuration((JSONObject) object);
@@ -199,9 +199,11 @@ public class Configuration {
 	 * @see Configuration#get(String)
 	 */
 	public Object getOrDefault(String key, Object defaultValue) {
-		if (!hasKey(key))
+		try {
+			return get(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return get(key);
+		}
 	}
 	
 	/**
@@ -213,11 +215,10 @@ public class Configuration {
 	 * @see Configuration#getEncoded(String)
 	 */
 	public Object getEncodedOrDefault(String key, Object defaultValue) {
-		if (!hasKey(key))
-			return defaultValue;
 		try {
 			return getEncoded(key);
-		} catch (JSONException | IOException | ClassNotFoundException | IllegalArgumentException | SecurityException | NullPointerException ignored) {
+		} catch (JSONException | IOException | ClassNotFoundException | IllegalArgumentException | SecurityException |
+		         NullPointerException ignored) {
 			return defaultValue;
 		}
 	}
@@ -231,9 +232,11 @@ public class Configuration {
 	 * @see Configuration#getString(String)
 	 */
 	public String getOrDefault(String key, String defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getString(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getString(key);
+		}
 	}
 	
 	/**
@@ -245,9 +248,11 @@ public class Configuration {
 	 * @see Configuration#getInt(String)
 	 */
 	public int getOrDefault(String key, int defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getInt(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getInt(key);
+		}
 	}
 	
 	/**
@@ -259,9 +264,11 @@ public class Configuration {
 	 * @see Configuration#getLong(String)
 	 */
 	public long getOrDefault(String key, long defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getLong(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getLong(key);
+		}
 	}
 	
 	/**
@@ -273,9 +280,11 @@ public class Configuration {
 	 * @see Configuration#getDouble(String)
 	 */
 	public double getOrDefault(String key, double defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getDouble(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getDouble(key);
+		}
 	}
 	
 	/**
@@ -287,9 +296,11 @@ public class Configuration {
 	 * @see Configuration#getFloat(String)
 	 */
 	public float getOrDefault(String key, float defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getFloat(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getFloat(key);
+		}
 	}
 	
 	/**
@@ -301,9 +312,11 @@ public class Configuration {
 	 * @see Configuration#getBoolean(String)
 	 */
 	public boolean getOrDefault(String key, boolean defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getBoolean(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getBoolean(key);
+		}
 	}
 	
 	/**
@@ -315,9 +328,11 @@ public class Configuration {
 	 * @see Configuration#getConfiguration(String)
 	 */
 	public Configuration getOrDefault(String key, Configuration defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getConfiguration(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getConfiguration(key);
+		}
 	}
 	
 	/**
@@ -329,9 +344,11 @@ public class Configuration {
 	 * @see Configuration#getJSONArray(String)
 	 */
 	public JSONArray getOrDefault(String key, JSONArray defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getJSONArray(key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getJSONArray(key);
+		}
 	}
 	
 	/**
@@ -345,9 +362,11 @@ public class Configuration {
 	 * @see Configuration#getEnum(Class, String)
 	 */
 	public <E extends Enum<E>> E getOrDefault(Class<E> clazz, String key, E defaultValue) {
-		if (!hasKey(key))
+		try {
+			return getEnum(clazz, key);
+		} catch (JSONException e) {
 			return defaultValue;
-		return getEnum(clazz, key);
+		}
 	}
 	
 	/**
@@ -366,9 +385,7 @@ public class Configuration {
 	 * @throws NullPointerException If the key is null.
 	 */
 	public Object set(String key, Object value) {
-		Object prevValue = null;
-		if (content.has(key))
-			prevValue = get(key);
+		Object prevValue = getOrDefault(key, (Object) null);
 		content.put(key, value);
 		return prevValue;
 	}
@@ -534,8 +551,6 @@ public class Configuration {
 	 * @return true if the key corresponds to an encoded object, false otherwise
 	 */
 	public boolean isEncodedObject(String key) {
-		if (!hasKey(key))
-			return false;
 		return getEncodedOrDefault(key, null) != null;
 	}
 	
@@ -576,31 +591,31 @@ public class Configuration {
 		
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
 		
-		Object o = ois.readObject();
+		Object obj = ois.readObject();
 		ois.close();
 		
-		return o;
+		return obj;
 		
 	}
 	
 	/**
 	 * Serializes an object into a Base64 encoded string.
 	 *
-	 * @param o The object to be serialized. Must implement the Serializable interface.
+	 * @param obj The object to be serialized. Must implement the Serializable interface.
 	 * @return A Base64 encoded string representation of the serialized object.
 	 * @throws IOException          If an I/O error occurs while serializing the object.
 	 * @throws SecurityException    If a security violation occurs during serialization.
 	 * @throws NullPointerException If the object passed is null.
 	 */
-	protected static String serialize(Serializable o) throws IOException, SecurityException, NullPointerException {
+	protected static String serialize(Serializable obj) throws IOException, SecurityException, NullPointerException {
 		
-		if (o == null)
+		if (obj == null)
 			throw new NullPointerException("null cannot be serialized!");
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		
-		oos.writeObject(o);
+		oos.writeObject(obj);
 		oos.close();
 		
 		return Base64.getEncoder().encodeToString(baos.toByteArray());
