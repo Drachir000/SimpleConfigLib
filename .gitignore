@@ -41,3 +41,4 @@ build/
 
 ### Maven ###
 /dependency-reduced-pom.xml
+/working-directory/
