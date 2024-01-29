@@ -4,6 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 public class SimpleConfigLibTest {
@@ -46,6 +49,26 @@ public class SimpleConfigLibTest {
 		assertEquals("value", config.getString("key"));
 		
 		assertThrows(JSONException.class, () -> config.get("invalid-key"));
+		
+	}
+	
+	@Test
+	public void testFiles() throws IOException {
+		
+		Configuration configuration = SimpleConfigLib.emptyConfiguration();
+		File file = new File("settings.json");
+		
+		if (file.exists())
+			assertTrue(file.delete());
+		
+		configuration.setString("key", "value");
+		
+		SimpleConfigLib.save(configuration, file);
+		
+		assertTrue(file.exists());
+		
+		Configuration loadedConfig = SimpleConfigLib.load(file);
+		assertEquals("value", loadedConfig.getString("key"));
 		
 	}
 	
