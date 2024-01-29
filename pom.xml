@@ -11,7 +11,7 @@
 	
 	<groupId>de.drachir000.utils</groupId>
 	<artifactId>simple-config-lib</artifactId>
-	<version>1.2.1</version>
+	<version>1.3</version>
 	
 	<name>SimpleConfigLib</name>
 	<description>A Simple Library for the handling of JSON Configurations.</description>
