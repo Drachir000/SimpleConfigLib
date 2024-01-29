@@ -863,6 +863,68 @@ public class ConfigurationTest {
 	}
 	
 	@Test
+	public void testDeserialization3() throws IOException, ClassNotFoundException {
+		
+		TestObject value = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		Configuration configObject = getConfigurationDeserialization3(value);
+		
+		Configuration configuration = new Configuration(
+				new JSONObject(
+						configObject.toString(true)
+				)
+		);
+		
+		assertEquals(value, configuration.getEncoded("encoded"));
+		assertEquals("value", configuration.getString("string"));
+		assertEquals(123, configuration.getInt("int"));
+		assertEquals(456L, configuration.getLong("long"));
+		assertEquals(123.45, configuration.getDouble("double"), 0.01);
+		assertEquals(567.89f, configuration.getFloat("float"), 0.01);
+		assertEquals('c', ((String) configuration.get("char")).charAt(0));
+		assertTrue(configuration.getBoolean("boolean"));
+		assertEquals("valueInner1", configuration.getConfiguration("config-1").getString("keyInner"));
+		assertEquals("valueInner2", configuration.getConfiguration("config-2").getString("keyInner"));
+		assertEquals("value1", configuration.getJSONArray("array").getString(0));
+		assertEquals("value2", configuration.getJSONArray("array").getString(1));
+		assertEquals(TestEnum.VALUE_TWO, configuration.getEnum(TestEnum.class, "enum"));
+		
+	}
+	
+	private static Configuration getConfigurationDeserialization3(TestObject value) throws IOException {
+		
+		Configuration configObject = new Configuration(new JSONObject());
+		
+		configObject.set("encoded", value);
+		
+		configObject.setString("string", "value");
+		
+		configObject.setInt("int", 123);
+		configObject.setLong("long", 456L);
+		configObject.setDouble("double", 123.45);
+		configObject.setFloat("float", 567.89f);
+		configObject.set("char", 'c');
+		configObject.setBoolean("boolean", true);
+		
+		JSONObject jsonObjectInner = new JSONObject();
+		jsonObjectInner.put("keyInner", "valueInner1");
+		configObject.setConfiguration("config-1", new Configuration(jsonObjectInner));
+		
+		Configuration configurationInner = new Configuration(new JSONObject());
+		configurationInner.setString("keyInner", "valueInner2");
+		configObject.setConfiguration("config-2", configurationInner);
+		
+		JSONArray jsonArray = new JSONArray();
+		jsonArray.put("value1");
+		jsonArray.put("value2");
+		configObject.setJSONArray("array", jsonArray);
+		
+		configObject.setEnum("enum", TestEnum.VALUE_TWO);
+		
+		return configObject;
+		
+	}
+	
+	@Test
 	public void testOOP() {
 		
 		JSONObject jsonObject = new JSONObject();
