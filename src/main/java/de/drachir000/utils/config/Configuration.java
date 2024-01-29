@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +30,12 @@ public class Configuration {
 	
 	/**
 	 * Get the value {@link Object} associated with a key.
+	 * <b>Caution: Objects without explicit getters might get assigned by {@link Configuration#set(String, Object)}. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncoded(String)} for retrieving these objects.</b>
 	 *
 	 * @param key A key string.
 	 * @return The {@link Object} associated with the key.
@@ -36,6 +44,24 @@ public class Configuration {
 	 */
 	public Object get(String key) throws JSONException {
 		return content.get(key);
+	}
+	
+	/**
+	 * Retrieves the {@link Serializable} {@link Object} value associated Base64 encoded with the given key.
+	 *
+	 * @param key The key of the value to retrieve.
+	 * @return The decoded {@link Serializable} {@link Object} associated with the given key.
+	 * @throws JSONException            If a JSON error occurs during the retrieval.
+	 * @throws IOException              If an IO error occurs during the retrieval.
+	 * @throws ClassNotFoundException   If a class cannot be found during the deserialization.
+	 * @throws IllegalArgumentException If an invalid argument is provided.
+	 * @throws SecurityException        If a security violation occurs during the retrieval.
+	 * @throws NullPointerException     If the value associated with the given key is null or blank.
+	 * @see Configuration#getEncodedOrDefault(String, Object)
+	 */
+	public Object getEncoded(String key) throws JSONException, IOException, ClassNotFoundException, IllegalArgumentException, SecurityException, NullPointerException {
+		String encoded = getString(key);
+		return deserialize(encoded);
 	}
 	
 	/**
@@ -160,6 +186,12 @@ public class Configuration {
 	
 	/**
 	 * Get the value {@link Object} associated with a key, or the provided replacement value if the key is not set.
+	 * <b>Caution: Objects without explicit getters might get assigned by {@link Configuration#set(String, Object)}. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncodedOrDefault(String, Object)} for retrieving these objects.</b>
 	 *
 	 * @param key          A key string.
 	 * @param defaultValue The fallback value
@@ -170,6 +202,24 @@ public class Configuration {
 		if (!hasKey(key))
 			return defaultValue;
 		return get(key);
+	}
+	
+	/**
+	 * Get the decoded {@link Serializable} {@link Object} associated with a key, or the provided replacement value if the key is not set.
+	 *
+	 * @param key          A key string.
+	 * @param defaultValue The fallback value
+	 * @return The {@link Serializable} {@link Object} associated encoded with the key or the fallback value
+	 * @see Configuration#getEncoded(String)
+	 */
+	public Object getEncodedOrDefault(String key, Object defaultValue) {
+		if (!hasKey(key))
+			return defaultValue;
+		try {
+			return getEncoded(key);
+		} catch (JSONException | IOException | ClassNotFoundException | IllegalArgumentException | SecurityException | NullPointerException ignored) {
+			return defaultValue;
+		}
 	}
 	
 	/**
@@ -302,6 +352,12 @@ public class Configuration {
 	
 	/**
 	 * Save an {@link Object} value in the {@link Configuration}. If the value is null, then the key will be removed from the {@link Configuration} if it is present.
+	 * <b>Caution: Objects without explicit setters might get assigned by this method. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncoded(String)} for retrieving these objects.</b>
 	 *
 	 * @param key   A key string.
 	 * @param value The {@link Object} Value to save.
@@ -314,6 +370,23 @@ public class Configuration {
 		if (content.has(key))
 			prevValue = get(key);
 		content.put(key, value);
+		return prevValue;
+	}
+	
+	/**
+	 * Saves an {@link Serializable} {@link Object} value in the {@link Configuration}.
+	 * The value will be serialized and then stored as a Base64 encoded String.
+	 *
+	 * @param key   the key to set
+	 * @param value the value to set
+	 * @return the previous value associated with the key, or {@code null} if there was no previous value
+	 * @throws IOException          if there was an IO error during serialization
+	 * @throws SecurityException    if a security violation occurs
+	 * @throws NullPointerException if the key or value is {@code null}
+	 */
+	public Object setEncoded(String key, Serializable value) throws IOException, SecurityException, NullPointerException {
+		Object prevValue = getEncodedOrDefault(key, null);
+		content.put(key, serialize(value));
 		return prevValue;
 	}
 	
@@ -455,6 +528,18 @@ public class Configuration {
 	}
 	
 	/**
+	 * Determines whether the specified key corresponds to a Base64 encoded {@link Serializable} {@link Object}.
+	 *
+	 * @param key the key to check
+	 * @return true if the key corresponds to an encoded object, false otherwise
+	 */
+	public boolean isEncodedObject(String key) {
+		if (!hasKey(key))
+			return false;
+		return getEncodedOrDefault(key, null) != null;
+	}
+	
+	/**
 	 * Make a JSON text of this {@link Configuration}. For compactness, no whitespace is added.
 	 *
 	 * @return a printable, displayable, portable, transmittable representation
@@ -469,6 +554,57 @@ public class Configuration {
 	
 	protected JSONObject toJsonObject() {
 		return content;
+	}
+	
+	/**
+	 * Deserializes a serialized object.
+	 *
+	 * @param s the serialized object as a Base64 encoded string
+	 * @return the deserialized object
+	 * @throws IOException              if an I/O error occurs while deserializing
+	 * @throws ClassNotFoundException   if the class of the object to be deserialized is not found
+	 * @throws IllegalArgumentException if the string is null or empty
+	 * @throws SecurityException        if a security manager exists and its checkPermission method denies permission to deserialize
+	 * @throws NullPointerException     if the string is null or empty
+	 */
+	protected static Object deserialize(String s) throws IOException, ClassNotFoundException, IllegalArgumentException, SecurityException, NullPointerException {
+		
+		if (s == null || s.isBlank())
+			throw new NullPointerException("Cannot deserialize null or empty String!");
+		
+		byte[] data = Base64.getDecoder().decode(s);
+		
+		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+		
+		Object o = ois.readObject();
+		ois.close();
+		
+		return o;
+		
+	}
+	
+	/**
+	 * Serializes an object into a Base64 encoded string.
+	 *
+	 * @param o The object to be serialized. Must implement the Serializable interface.
+	 * @return A Base64 encoded string representation of the serialized object.
+	 * @throws IOException          If an I/O error occurs while serializing the object.
+	 * @throws SecurityException    If a security violation occurs during serialization.
+	 * @throws NullPointerException If the object passed is null.
+	 */
+	protected static String serialize(Serializable o) throws IOException, SecurityException, NullPointerException {
+		
+		if (o == null)
+			throw new NullPointerException("null cannot be serialized!");
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		
+		oos.writeObject(o);
+		oos.close();
+		
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+		
 	}
 	
 }
