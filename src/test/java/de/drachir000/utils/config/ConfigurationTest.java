@@ -26,6 +26,25 @@ public class ConfigurationTest {
 	}
 	
 	@Test
+	public void testGetEncoded() throws IOException, ClassNotFoundException {
+		
+		JSONObject jsonObject = new JSONObject();
+		
+		// System.out.println(Configuration.serialize(new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f)));
+		String encodedObject = "rO0ABXNyADdkZS5kcmFjaGlyMDAwLnV0aWxzLmNvbmZpZy5Db25maWd1cmF0aW9uVGVzdCRUZXN0T2JqZWN0AAAAAAAAAAA" +
+				"CAARGAAFmSQABaUwAAWV0ADdMZGUvZHJhY2hpcjAwMC91dGlscy9jb25maWcvQ29uZmlndXJhdGlvblRlc3QkVGVzdEVudW07TAABc3QAEkxqY" +
+				"XZhL2xhbmcvU3RyaW5nO3hwQ+Rj1wAAAHt+cgA1ZGUuZHJhY2hpcjAwMC51dGlscy5jb25maWcuQ29uZmlndXJhdGlvblRlc3QkVGVzdEVudW0" +
+				"AAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AAtWQUxVRV9USFJFRXQADEhlbGxvIFdvcmxkIQ==";
+		
+		jsonObject.put("key", encodedObject);
+		
+		Configuration configuration = new Configuration(jsonObject);
+		
+		assertEquals(new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f), configuration.getEncoded("key"));
+		
+	}
+	
+	@Test
 	public void testGetString() {
 		
 		JSONObject jsonObject = new JSONObject();
@@ -179,6 +198,22 @@ public class ConfigurationTest {
 	}
 	
 	@Test
+	public void testGetEncodedDefault1() throws IOException, ClassNotFoundException {
+		
+		JSONObject jsonObject = new JSONObject();
+		Configuration configuration = new Configuration(jsonObject);
+		
+		assertEquals(
+				new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f),
+				configuration.getEncodedOrDefault(
+						"invalid-key",
+						new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f)
+				)
+		);
+		
+	}
+	
+	@Test
 	public void testGetStringDefault1() {
 		
 		JSONObject jsonObject = new JSONObject();
@@ -317,6 +352,31 @@ public class ConfigurationTest {
 		
 		assertEquals(TestEnum.VALUE_ONE, configuration.getOrDefault("invalid-key", TestEnum.VALUE_ONE));
 		assertEquals(TestEnum.VALUE_ONE, configuration.getOrDefault(TestEnum.class, "invalid-key", TestEnum.VALUE_ONE));
+		
+	}
+	
+	@Test
+	public void testGetEncodedDefault2() throws IOException, ClassNotFoundException {
+		
+		JSONObject jsonObject = new JSONObject();
+		
+		// System.out.println(Configuration.serialize(new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f)));
+		String encodedObject = "rO0ABXNyADdkZS5kcmFjaGlyMDAwLnV0aWxzLmNvbmZpZy5Db25maWd1cmF0aW9uVGVzdCRUZXN0T2JqZWN0AAAAAAAAAAA" +
+				"CAARGAAFmSQABaUwAAWV0ADdMZGUvZHJhY2hpcjAwMC91dGlscy9jb25maWcvQ29uZmlndXJhdGlvblRlc3QkVGVzdEVudW07TAABc3QAEkxqY" +
+				"XZhL2xhbmcvU3RyaW5nO3hwQ+Rj1wAAAHt+cgA1ZGUuZHJhY2hpcjAwMC51dGlscy5jb25maWcuQ29uZmlndXJhdGlvblRlc3QkVGVzdEVudW0" +
+				"AAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AAtWQUxVRV9USFJFRXQADEhlbGxvIFdvcmxkIQ==";
+		
+		jsonObject.put("key", encodedObject);
+		
+		Configuration configuration = new Configuration(jsonObject);
+		
+		assertEquals(
+				new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f),
+				configuration.getEncodedOrDefault(
+						"key",
+						new TestObject(678, "Bye World!", TestEnum.VALUE_ONE, 123.45f)
+				)
+		);
 		
 	}
 	
@@ -470,6 +530,27 @@ public class ConfigurationTest {
 		configuration.set("key", 123.45f);
 		
 		assertEquals(123.45f, configuration.get("key"));
+		
+	}
+	
+	@Test
+	public void testSetEncoded() throws IOException, ClassNotFoundException {
+		
+		Configuration configuration = new Configuration(new JSONObject());
+		TestObject value = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		
+		configuration.setEncoded("key", value);
+		configuration.set("key2", value);
+		
+		assertEquals(value, configuration.getEncoded("key"));
+		assertEquals(value, configuration.get("key2"));
+		
+		Configuration configurationReloaded = new Configuration(
+				new JSONObject(configuration.toString())
+		);
+		
+		assertEquals(value, configurationReloaded.getEncoded("key"));
+		assertNotEquals(value, configurationReloaded.get("key2")); // This is why the whole "save serialized and encoded" system is required
 		
 	}
 	
@@ -630,6 +711,25 @@ public class ConfigurationTest {
 	}
 	
 	@Test
+	public void testIsEncodedObject() throws IOException {
+		
+		TestObject value = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		JSONObject jsonObject = new JSONObject();
+		
+		jsonObject.put("key", value);
+		
+		Configuration configuration = new Configuration(jsonObject);
+		configuration.setEncoded("key-encoded", value);
+		
+		assertTrue(configuration.hasKey("key"));
+		assertFalse(configuration.isEncodedObject("key"));
+		
+		assertTrue(configuration.hasKey("key-encoded"));
+		assertTrue(configuration.isEncodedObject("key-encoded"));
+		
+	}
+	
+	@Test
 	public void testToString() {
 		
 		JSONObject jsonObject = new JSONObject();
@@ -643,9 +743,10 @@ public class ConfigurationTest {
 	}
 	
 	@Test
-	public void testDeserialization1() {
+	public void testDeserialization1() throws IOException, ClassNotFoundException {
 		
-		JSONObject jsonObject = generateConfigDeserialization1();
+		TestObject value = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		JSONObject jsonObject = generateConfigDeserialization1(value);
 		
 		Configuration configuration = new Configuration(
 				new JSONObject(
@@ -653,6 +754,7 @@ public class ConfigurationTest {
 				)
 		);
 		
+		assertEquals(value, configuration.getEncoded("encoded"));
 		assertEquals("value", configuration.getString("string"));
 		assertEquals(123, configuration.getInt("int"));
 		assertEquals(456L, configuration.getLong("long"));
@@ -667,9 +769,11 @@ public class ConfigurationTest {
 		
 	}
 	
-	private static JSONObject generateConfigDeserialization1() {
+	private static JSONObject generateConfigDeserialization1(TestObject value) throws IOException {
 		
 		JSONObject jsonObject = new JSONObject();
+		
+		jsonObject.put("encoded", Configuration.serialize(value));
 		
 		jsonObject.put("string", "value");
 		
@@ -699,9 +803,10 @@ public class ConfigurationTest {
 	}
 	
 	@Test
-	public void testDeserialization2() {
+	public void testDeserialization2() throws IOException, ClassNotFoundException {
 		
-		Configuration configObject = getConfigurationDeserialization2();
+		TestObject value = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		Configuration configObject = getConfigurationDeserialization2(value);
 		
 		Configuration configuration = new Configuration(
 				new JSONObject(
@@ -709,6 +814,7 @@ public class ConfigurationTest {
 				)
 		);
 		
+		assertEquals(value, configuration.getEncoded("encoded"));
 		assertEquals("value", configuration.getString("string"));
 		assertEquals(123, configuration.getInt("int"));
 		assertEquals(456L, configuration.getLong("long"));
@@ -723,9 +829,11 @@ public class ConfigurationTest {
 		
 	}
 	
-	private static Configuration getConfigurationDeserialization2() {
+	private static Configuration getConfigurationDeserialization2(TestObject value) throws IOException {
 		
 		Configuration configObject = new Configuration(new JSONObject());
+		
+		configObject.setEncoded("encoded", value);
 		
 		configObject.setString("string", "value");
 		
@@ -770,38 +878,6 @@ public class ConfigurationTest {
 		assertEquals("value", configuration2.getString("key"));
 		assertEquals("value-2", configuration2.getString("key-2"));
 		assertEquals("value-2", jsonObject.getString("key-2"));
-		
-	}
-	
-	@Test
-	public void testSavingSerializedObjects() throws IOException, ClassNotFoundException {
-		
-		Configuration configuration = SimpleConfigLib.emptyConfiguration();
-		TestObject object = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
-		
-		configuration.set("serializedObject", Configuration.serialize(object));
-		
-		String configString = configuration.toString();
-		Configuration reCreatedConfiguration1 = SimpleConfigLib.buildConfiguration(configString);
-		
-		assertEquals(object, Configuration.deserialize(configuration.getString("serializedObject")));
-		assertEquals(object, Configuration.deserialize(reCreatedConfiguration1.getString("serializedObject")));
-		
-	}
-	
-	@Test
-	public void testSavingObjects() {
-		
-		Configuration configuration = SimpleConfigLib.emptyConfiguration();
-		TestObject object = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
-		
-		configuration.set("object", object);
-		
-		String configString = configuration.toString();
-		Configuration reCreatedConfiguration1 = SimpleConfigLib.buildConfiguration(configString);
-		
-		assertEquals(object, configuration.get("object"));
-		assertNotEquals(object, reCreatedConfiguration1.get("object")); // Expected behaviour -> That's the reason, why we need a way to store objects serialized and Base64 encoded
 		
 	}
 	
