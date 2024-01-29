@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.io.*;
+import java.util.Base64;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -771,6 +773,61 @@ public class ConfigurationTest {
 		
 	}
 	
+	@Test
+	public void testSavingSerializedObjects() throws IOException, ClassNotFoundException {
+		
+		Configuration configuration = SimpleConfigLib.emptyConfiguration();
+		TestObject object = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		
+		configuration.set("serializedObject", toString(object));
+		
+		String configString = configuration.toString();
+		Configuration reCreatedConfiguration1 = SimpleConfigLib.buildConfiguration(configString);
+		
+		assertEquals(object, fromString(configuration.getString("serializedObject")));
+		assertEquals(object, fromString(reCreatedConfiguration1.getString("serializedObject")));
+		
+	}
+	
+	@Test
+	public void testSavingObjects() throws IOException, ClassNotFoundException {
+		
+		Configuration configuration = SimpleConfigLib.emptyConfiguration();
+		TestObject object = new TestObject(123, "Hello World!", TestEnum.VALUE_THREE, 456.78f);
+		
+		configuration.set("object", object);
+		
+		String configString = configuration.toString();
+		Configuration reCreatedConfiguration1 = SimpleConfigLib.buildConfiguration(configString);
+		
+		assertEquals(object, configuration.get("object"));
+		assertNotEquals(object, reCreatedConfiguration1.get("object")); // Expected behaviour -> That's the reason, why we need a way to store objects serialized and Base64 encoded
+		
+	}
+	
+	/**
+	 * Read the object from Base64 string. Just a sketch!
+	 */
+	private static Object fromString(String s) throws IOException, ClassNotFoundException {
+		byte[] data = Base64.getDecoder().decode(s);
+		ObjectInputStream ois = new ObjectInputStream(
+				new ByteArrayInputStream(data));
+		Object o = ois.readObject();
+		ois.close();
+		return o;
+	}
+	
+	/**
+	 * Write the object to a Base64 string. Just a sketch!
+	 */
+	private static String toString(Serializable o) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(o);
+		oos.close();
+		return Base64.getEncoder().encodeToString(baos.toByteArray());
+	}
+	
 	private enum TestEnum {
 		
 		VALUE_ONE,
@@ -778,5 +835,7 @@ public class ConfigurationTest {
 		VALUE_THREE;
 		
 	}
+	
+	private record TestObject(int i, String s, TestEnum e, float f) implements Serializable {}
 	
 }
