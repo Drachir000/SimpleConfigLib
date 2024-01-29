@@ -30,6 +30,12 @@ public class Configuration {
 	
 	/**
 	 * Get the value {@link Object} associated with a key.
+	 * <b>Caution: Objects without explicit getters might get assigned by {@link Configuration#set(String, Object)}. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncoded(String)} for retrieving these objects.</b>
 	 *
 	 * @param key A key string.
 	 * @return The {@link Object} associated with the key.
@@ -180,6 +186,12 @@ public class Configuration {
 	
 	/**
 	 * Get the value {@link Object} associated with a key, or the provided replacement value if the key is not set.
+	 * <b>Caution: Objects without explicit getters might get assigned by {@link Configuration#set(String, Object)}. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncodedOrDefault(String, Object)} for retrieving these objects.</b>
 	 *
 	 * @param key          A key string.
 	 * @param defaultValue The fallback value
@@ -340,6 +352,12 @@ public class Configuration {
 	
 	/**
 	 * Save an {@link Object} value in the {@link Configuration}. If the value is null, then the key will be removed from the {@link Configuration} if it is present.
+	 * <b>Caution: Objects without explicit setters might get assigned by this method. However,
+	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
+	 * such {@link Configuration}s that are constructed from this string ({@link SimpleConfigLib#buildConfiguration(String)})
+	 * will contain a string representation of the Object associated with the key!
+	 * To prevent this, employ {@link Configuration#setEncoded(String, Serializable)} for setting
+	 * and {@link Configuration#getEncoded(String)} for retrieving these objects.</b>
 	 *
 	 * @param key   A key string.
 	 * @param value The {@link Object} Value to save.
