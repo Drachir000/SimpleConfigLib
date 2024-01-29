@@ -53,13 +53,7 @@ public class SimpleConfigLib {
 	 * @since 1.3
 	 */
 	public static void save(Configuration configuration, File file) throws IOException {
-		
-		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-		writer.write(configuration.toString());
-		
-		writer.flush();
-		writer.close();
-		
+		save(configuration, file, false);
 	}
 	
 	/**
@@ -76,13 +70,8 @@ public class SimpleConfigLib {
 	 */
 	public static void save(Configuration configuration, File file, boolean encodeUnknownObjects) throws IOException {
 		
-		if (!encodeUnknownObjects) {
-			save(configuration, file);
-			return;
-		}
-		
 		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-		writer.write(configuration.toString(true));
+		writer.write(configuration.toString(encodeUnknownObjects));
 		
 		writer.flush();
 		writer.close();
