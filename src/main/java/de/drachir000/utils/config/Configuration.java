@@ -21,10 +21,8 @@ public class Configuration {
 	 *
 	 * @param jsonObject The base {@link JSONObject}
 	 * @see SimpleConfigLib
-	 * @deprecated This is planned to be replaced by {@link SimpleConfigLib#buildConfiguration(JSONObject)}!
 	 */
-	@Deprecated
-	public Configuration(JSONObject jsonObject) {
+	protected Configuration(JSONObject jsonObject) {
 		this.content = jsonObject;
 	}
 	
