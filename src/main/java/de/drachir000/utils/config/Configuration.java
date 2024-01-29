@@ -41,6 +41,24 @@ public class Configuration {
 	}
 	
 	/**
+	 * Retrieves the Base64 encoded {@link Serializable} object value associated with the given key.
+	 *
+	 * @param key The key of the value to retrieve.
+	 * @return The decoded {@link Serializable} {@link Object} associated with the given key.
+	 * @throws JSONException            If a JSON error occurs during the retrieval.
+	 * @throws IOException              If an IO error occurs during the retrieval.
+	 * @throws ClassNotFoundException   If a class cannot be found during the deserialization.
+	 * @throws IllegalArgumentException If an invalid argument is provided.
+	 * @throws SecurityException        If a security violation occurs during the retrieval.
+	 * @throws NullPointerException     If the value associated with the given key is null or blank.
+	 * @see Configuration#getEncodedOrDefault(String, Object)
+	 */
+	public Object getEncoded(String key) throws JSONException, IOException, ClassNotFoundException, IllegalArgumentException, SecurityException, NullPointerException {
+		String encoded = getString(key);
+		return deserialize(encoded);
+	}
+	
+	/**
 	 * Get the {@link String} associated with a key.
 	 *
 	 * @param key A key string.
@@ -172,6 +190,24 @@ public class Configuration {
 		if (!hasKey(key))
 			return defaultValue;
 		return get(key);
+	}
+	
+	/**
+	 * Get the decoded {@link Serializable} {@link Object} associated with a key, or the provided replacement value if the key is not set.
+	 *
+	 * @param key          A key string.
+	 * @param defaultValue The fallback value
+	 * @return The {@link Serializable} {@link Object} associated encoded with the key or the fallback value
+	 * @see Configuration#getEncoded(String)
+	 */
+	public Object getEncodedOrDefault(String key, Object defaultValue) {
+		if (!hasKey(key))
+			return defaultValue;
+		try {
+			return getEncoded(key);
+		} catch (JSONException | IOException | ClassNotFoundException | IllegalArgumentException | SecurityException | NullPointerException ignored) {
+			return defaultValue;
+		}
 	}
 	
 	/**
@@ -316,6 +352,23 @@ public class Configuration {
 		if (content.has(key))
 			prevValue = get(key);
 		content.put(key, value);
+		return prevValue;
+	}
+	
+	/**
+	 * Saves an {@link Serializable} {@link Object} value in the {@link Configuration}.
+	 * The value will be serialized and then stored as a Base64 encoded String.
+	 *
+	 * @param key   the key to set
+	 * @param value the value to set
+	 * @return the previous value associated with the key, or {@code null} if there was no previous value
+	 * @throws IOException          if there was an IO error during serialization
+	 * @throws SecurityException    if a security violation occurs
+	 * @throws NullPointerException if the key or value is {@code null}
+	 */
+	public Object setEncoded(String key, Serializable value) throws IOException, SecurityException, NullPointerException {
+		Object prevValue = getEncodedOrDefault(key, null);
+		content.put(key, serialize(value));
 		return prevValue;
 	}
 	
