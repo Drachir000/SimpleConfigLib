@@ -17,7 +17,7 @@ public class SimpleConfigLib {
 	 * @since 1.1
 	 */
 	public static Configuration emptyConfiguration() {
-		return new Configuration(new JSONObject());
+		return buildConfiguration(new JSONObject());
 	}
 	
 	/**
@@ -41,7 +41,7 @@ public class SimpleConfigLib {
 	 * @since 1.1
 	 */
 	public static Configuration buildConfiguration(String source) throws JSONException {
-		return new Configuration(new JSONObject(source));
+		return buildConfiguration(new JSONObject(source));
 	}
 	
 	/**
