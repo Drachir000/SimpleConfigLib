@@ -41,7 +41,7 @@ public class Configuration {
 	}
 	
 	/**
-	 * Retrieves the Base64 encoded {@link Serializable} object value associated with the given key.
+	 * Retrieves the {@link Serializable} {@link Object} value associated Base64 encoded with the given key.
 	 *
 	 * @param key The key of the value to retrieve.
 	 * @return The decoded {@link Serializable} {@link Object} associated with the given key.
@@ -507,6 +507,18 @@ public class Configuration {
 	 */
 	public boolean hasKey(String key) {
 		return content.has(key);
+	}
+	
+	/**
+	 * Determines whether the specified key corresponds to a Base64 encoded {@link Serializable} {@link Object}.
+	 *
+	 * @param key the key to check
+	 * @return true if the key corresponds to an encoded object, false otherwise
+	 */
+	public boolean isEncodedObject(String key) {
+		if (!hasKey(key))
+			return false;
+		return getEncodedOrDefault(key, null) != null;
 	}
 	
 	/**
