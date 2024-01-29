@@ -53,13 +53,34 @@ public class SimpleConfigLibTest {
 	}
 	
 	@Test
-	public void testFiles() throws IOException {
+	public void testSaveFile() throws IOException {
 		
 		Configuration configuration = SimpleConfigLib.emptyConfiguration();
 		File file = new File("settings.json");
 		
 		if (file.exists())
 			assertTrue(file.delete());
+		
+		configuration.setString("key", "value");
+		
+		SimpleConfigLib.save(configuration, file);
+		
+		assertTrue(file.exists());
+		
+		Configuration loadedConfig = SimpleConfigLib.load(file);
+		assertEquals("value", loadedConfig.getString("key"));
+		
+	}
+	
+	@Test
+	public void testLoadFile() throws IOException {
+		
+		File file = new File("settings.json");
+		
+		if (file.exists())
+			assertTrue(file.delete());
+		
+		Configuration configuration = SimpleConfigLib.load(file);
 		
 		configuration.setString("key", "value");
 		

@@ -100,15 +100,22 @@ public class SimpleConfigLib {
 	 */
 	public static Configuration load(File file) throws IOException, JSONException {
 		
-		BufferedReader reader = new BufferedReader(new FileReader(file));
 		StringBuilder builder = new StringBuilder();
 		
-		String line;
-		while ((line = reader.readLine()) != null) {
-			builder.append(line);
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			
+			String line;
+			while ((line = reader.readLine()) != null) {
+				builder.append(line);
+			}
+			
+			reader.close();
+		} catch (FileNotFoundException ignored) {
 		}
 		
-		reader.close();
+		if (builder.toString().isBlank())
+			return emptyConfiguration();
 		
 		return buildConfiguration(builder.toString());
 		
