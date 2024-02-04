@@ -183,6 +183,70 @@ public class Configuration {
 	}
 	
 	/**
+	 * Get the {@link Byte} value associated with a key.
+	 *
+	 * @param key A key string.
+	 * @return The {@link Byte} value.
+	 * @throws JSONException if the key is not found or if the value is not a {@link Byte}.
+	 * @see Configuration#getOrDefault(String, byte)
+	 */
+	public byte getByte(String key) throws JSONException {
+		Object object = get(key);
+		if (object instanceof Number) {
+			return ((Number) object).byteValue();
+		}
+		try {
+			return Byte.parseByte(object.toString());
+		} catch (Exception e) {
+			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "byte" + " (" + object.getClass() + " : " + object + ").", e);
+		}
+	}
+	
+	/**
+	 * Get the {@link Short} value associated with a key.
+	 *
+	 * @param key A key string.
+	 * @return The {@link Short} value.
+	 * @throws JSONException if the key is not found or if the value is not a {@link Short}.
+	 * @see Configuration#getOrDefault(String, short)
+	 */
+	public short getShort(String key) throws JSONException {
+		Object object = get(key);
+		if (object instanceof Number) {
+			return ((Number) object).shortValue();
+		}
+		try {
+			return Short.parseShort(object.toString());
+		} catch (Exception e) {
+			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "short" + " (" + object.getClass() + " : " + object + ").", e);
+		}
+	}
+	
+	/**
+	 * Get the {@link Character} value associated with a key.
+	 *
+	 * @param key A key string.
+	 * @return The {@link Character} value.
+	 * @throws JSONException if the key is not found or if the value is not a {@link Character}.
+	 * @see Configuration#getOrDefault(String, char)
+	 */
+	public char getChar(String key) throws JSONException {
+		Object object = get(key);
+		if (object instanceof Character) {
+			return (char) object;
+		}
+		String s = object.toString();
+		if (s.length() > 1) {
+			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "char" + " (" + object.getClass() + " : " + object + ").");
+		}
+		try {
+			return s.charAt(0);
+		} catch (Exception e) {
+			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "short" + " (" + object.getClass() + " : " + object + ").", e);
+		}
+	}
+	
+	/**
 	 * Get the value {@link Object} associated with a key, or the provided replacement value if the key is not set.
 	 * <b>Caution: Objects without explicit getters might get assigned by {@link Configuration#set(String, Object)}. However,
 	 * while serializing the {@link Configuration} ({@link Configuration#toString()}),
@@ -362,6 +426,54 @@ public class Configuration {
 	public <E extends Enum<E>> E getOrDefault(Class<E> clazz, String key, E defaultValue) {
 		try {
 			return getEnum(clazz, key);
+		} catch (JSONException e) {
+			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Get the {@link Byte} associated with a key, or the provided replacement value if the key is not set.
+	 *
+	 * @param key          A key string.
+	 * @param defaultValue The fallback value
+	 * @return The {@link Byte} associated with the key or the fallback value
+	 * @see Configuration#getByte(String)
+	 */
+	public byte getOrDefault(String key, byte defaultValue) {
+		try {
+			return getByte(key);
+		} catch (JSONException e) {
+			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Get the {@link Short} associated with a key, or the provided replacement value if the key is not set.
+	 *
+	 * @param key          A key string.
+	 * @param defaultValue The fallback value
+	 * @return The {@link Short} associated with the key or the fallback value
+	 * @see Configuration#getShort(String)
+	 */
+	public short getOrDefault(String key, short defaultValue) {
+		try {
+			return getShort(key);
+		} catch (JSONException e) {
+			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Get the {@link Character} associated with a key, or the provided replacement value if the key is not set.
+	 *
+	 * @param key          A key string.
+	 * @param defaultValue The fallback value
+	 * @return The {@link Character} associated with the key or the fallback value
+	 * @see Configuration#getChar(String)
+	 */
+	public char getOrDefault(String key, char defaultValue) {
+		try {
+			return getChar(key);
 		} catch (JSONException e) {
 			return defaultValue;
 		}
