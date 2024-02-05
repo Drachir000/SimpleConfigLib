@@ -242,7 +242,7 @@ public class Configuration {
 		try {
 			return s.charAt(0);
 		} catch (Exception e) {
-			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "short" + " (" + object.getClass() + " : " + object + ").", e);
+			throw new JSONException("JSONObject[" + JSONObject.quote(key) + "] is not a " + "char" + " (" + object.getClass() + " : " + object + ").", e);
 		}
 	}
 	
